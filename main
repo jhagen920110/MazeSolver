@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+import sys
+from queue import Queue
+from PIL import Image
+
+#Initialzations
+image = sys.argv[1]
+img = Image.open(image)
+img_pixels = img.load()
+img_width = img.size[0]
+img_height = img.size[1]
+path_img = Image.open(image)
+path_pixels = path_img.load()
+for i in range(img_width): #finding starting and ending pixels
+    for j in range(img_height):
+        if img_pixels[i, j][0] > 200 and img_pixels[i, j][1] < 100: # if R value is greater than 200 and G value is less than 100. It avoids picking up white,black, or blue (just in case red color is not perfect red)
+            startPixel = (i,j)
+        if img_pixels[i, j][0] < 100 and img_pixels[i, j][2] > 200: # if B value is greater than 200 and R value is less than 100. It avoids picking up white, black, or red (just in case blue color is not perfect blue)
+            endPixel = (i,j)
+
+def checkForWhite(x): #if the pixel visited is black (0,0,0) or visited (gray) (127,127,127), return false. Else return true
+    if x == (0,0,0,255) or x == (0,0,0) or x == (127,127,127) or x == (127,127,127,255):
+        return False
+    else:
+        return True
+
+def getNextPixel(x): #find adjacent node from a given pixel
+    row,column = x
+    return [(row-1,column),(row,column-1),(row+1,column),(row,column+1)]
+
+def BFS(start, end, width, height, location): #Breadth first search through whole pixels matrix
+    queue = Queue()
+    queue.put([start]) #enqueue start location in list form
+    while not queue.empty(): #while there is nothing in the queue
+        path = queue.get() #path will have entire path from starting to any pixel that is being searched. It dequeues the very first item to path
+        pixel = path[-1] #pixel will have the last pixel from path, which is furthest point from start
+        if pixel == end: #if the furthest point is same as end pixel, return whole path
+            return path
+        for adjacent in getNextPixel(pixel): #check adjacent pixels (most of the time it is 4 other pixels from original: top, bottom, left, right)
+            x,y = adjacent
+            if x < 0 or y < 0 or x >= width or y >= height: #if pixel is less than 0 or larger than the width and height, it is out of index. Skip these cases
+                pass
+            elif checkForWhite(location[x,y]): #if that pixel's RGB value is a path (not black or gray(visited))
+                location[x,y] = (127,127,127,255) #mask the pixel to be gray(visited), so we do not visit again
+                path = list(path) #change data type of path to list so we can append adjacent
+                path.append(adjacent) #now path will be from starting point to adjacent pixel
+                queue.put(path) #enqueue entire path to queue in order to check for next further path until pixel == end
+    print ("No result found") #if pixel never equals to end, no result has found
+
+path = BFS(startPixel, endPixel, img_width, img_height, img_pixels)
+#paint path pixels with green
+for pixels in path:
+    x,y = pixels
+    path_pixels[x,y] = (0,255,0,255)
+path_img.save(sys.argv[2]) #save result image
