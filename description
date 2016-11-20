@@ -1,0 +1,30 @@
+#This python script will require two sys.argv input from the user:
+#first one: maze image file you want to solve; second one: solved image file that you want to save
+
+#There are rules for the image file
+# 1) Borders are covered with black wall
+# 2) Starting point is marked with red, ending point is marked with blue
+# 3) Solution path will be marked with green
+
+#It will load the image using PIL, then find starting and ending pixel point
+#Using loaded image, starting and ending pixels, it uses Breadth first search
+#   Breath first search finds the shortest path from one point to the other
+
+#BFS
+#First, it creates a queue, then enqueue starting pixel location
+#while queue is not empty,
+# path will be reinitialized with very first element in the queue (element will be dequeued from queue when element is assigned to the path)
+# path will contain path from the starting to any point ex)[(1,1),(2,2),(3,3),...,(100,100)]
+# pixel will contain the furthest point of the path ex)(100,100)
+# if pixel is same as ending pixel, it returns the path
+# if it is not
+#   it finds all of the adjacent pixels of the pixel (top,bottom,left,right) ex) [(99,100),(100,99),(101,100),(100,101)]
+#   for each adjacent pixels, it looks for the path
+#     if adjacent pixels are not black or gray(visited), then attach that pixel to the path, so path will contain whole path from starting to the adjacent pixel
+#     mark visited pixel with gray, so we dont visit again (127,127,127,255)
+#     enqueue updated path to the queue for next search
+
+#keep doing this until there is nothing in the queue or we find pixel == endpixel
+
+#after finding the path, mark the path to green (0,255,0,255)
+#save image
